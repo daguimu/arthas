@@ -59,7 +59,7 @@ public class JFRCommand extends AnnotatedCommand {
     private JFRModel result = new JFRModel();
     private static Map<Long, Recording> recordings = new ConcurrentHashMap<Long, Recording>();
 
-    @Argument(index = 0, argName = "cmd", required = true)
+    @Argument(index = 0, argName = "cmd")
     @Description("command name (start status stop dump)")
     public void setCmd(String cmd) {
         this.cmd = cmd;
@@ -209,7 +209,7 @@ public class JFRCommand extends AnnotatedCommand {
                 }
             }
 
-            if (isDumpOnExit() != false) {
+            if (isDumpOnExit()) {
                 r.setDumpOnExit(isDumpOnExit().booleanValue());
             }
 
@@ -256,6 +256,7 @@ public class JFRCommand extends AnnotatedCommand {
                 Recording r = recordings.get(getRecording());
                 if (r == null) {
                     process.end(-1, "recording not exit");
+                    return;
                 }
                 printRecording(r);
             } else {// list all recordings
@@ -308,6 +309,7 @@ public class JFRCommand extends AnnotatedCommand {
                 Recording r = recordings.remove(getRecording());
                 if (r == null) {
                     process.end(-1, "recording not exit");
+                    return;
                 }
                 if ("CLOSED".equals(r.getState().toString()) || "STOPPED".equals(r.getState().toString())) {
                     process.end(-1, "Failed to stop recording, state can not be closed/stopped");
@@ -322,7 +324,7 @@ public class JFRCommand extends AnnotatedCommand {
                 try {
                     r.setDestination(Paths.get(getFilename()));
                 } catch (IOException e) {
-                    process.end(-1, "Failed to stop" + r.getName() + ". Could not set destination for " + filename + "to file" + e.getMessage());
+                    process.end(-1, "Failed to stop " + r.getName() + ". Could not set destination for " + filename + "to file" + e.getMessage());
                 }
 
                 r.stop();
@@ -353,7 +355,7 @@ public class JFRCommand extends AnnotatedCommand {
             try {
                 return Long.parseLong(s);
             } catch (Exception e) {
-                throw new NumberFormatException("'" + s + "' is not a valid size. Shoule be numeric value followed by a unit, i.e. 20M. Valid units k, M, G");
+                throw new NumberFormatException("'" + s + "' is not a valid size. Should be numeric value followed by a unit, i.e. 20M. Valid units k, M, G");
             }
         }
     }
